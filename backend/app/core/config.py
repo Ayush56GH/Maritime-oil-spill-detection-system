@@ -1,5 +1,8 @@
-from typing import List
+from typing import List, Optional
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 try:
     from pydantic_settings import BaseSettings
@@ -17,7 +20,11 @@ class Settings(BaseSettings):
         "*"
     ]
     
-    # Database Configuration (PostgreSQL + PostGIS)
+    # Supabase / External PostgreSQL Configuration
+    DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
+    AISSTREAM_API_KEY: Optional[str] = os.getenv("AISSTREAM_API_KEY")
+
+    # Local Database Configuration fallback
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "econav")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "econav_secret_pass")
@@ -26,10 +33,11 @@ class Settings(BaseSettings):
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
         return f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
-    # In-memory mock switch (allows running immediately without live Postgres)
-    USE_MOCK_DATA: bool = True
+    USE_MOCK_DATA: bool = os.getenv("USE_MOCK_DATA", "false").lower() == "true"
 
 
 settings = Settings()

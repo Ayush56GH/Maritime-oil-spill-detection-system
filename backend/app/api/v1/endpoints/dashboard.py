@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.schemas.dashboard import OperationalStats, CandidateVessel
 from app.services.mock_database import mock_db
+from app.services.ais_service import ais_data_service
 
 router = APIRouter()
 
@@ -11,7 +12,7 @@ async def get_dashboard_stats():
     Returns active vessel counts, tracked routes, and detected spills
     displayed in the top-right operational cards.
     """
-    return mock_db.stats
+    return ais_data_service.get_operational_stats()
 
 
 @router.get("/candidate", response_model=CandidateVessel, summary="Fetch current high-priority candidate vessel")
